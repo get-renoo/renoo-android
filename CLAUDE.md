@@ -22,10 +22,21 @@ Guidance for AI coding assistants working in this repo: the Renoo Android SDK (`
 
 ## Commands
 
-Toolchain: Gradle 8.14 (wrapper), AGP 8.13.2, Kotlin 2.2.20, JDK 17+ to run Gradle. `local.properties` (`sdk.dir=...`) is local only.
+Toolchain: Gradle 9.5.1 (wrapper; AGP 8.x does not run on Gradle 9.6+), AGP 8.13.2, Kotlin 2.2.20, JDK 17+ to run Gradle. `local.properties` (`sdk.dir=...`) is local only.
 
 - Unit tests (JVM): `./gradlew :renoo:testDebugUnitTest`
 - Build the AAR: `./gradlew :renoo:assembleDebug`
+- Publish to `~/.m2` for a local test app: `./gradlew :renoo:publishToMavenLocal` (unsigned without a signing key)
+
+## Releasing
+
+Published to Maven Central as `dev.renoo:renoo-android` with the `com.vanniktech.maven.publish` plugin; the version is read from `Renoo.SDK_VERSION`.
+
+1. Bump `Renoo.SDK_VERSION`, date the version in `CHANGELOG.md`, merge to `main`.
+2. Push a tag equal to the version (`0.2.0`, no `v`). `.github/workflows/release.yml` checks the tag matches, runs the tests, signs and uploads a deployment to the Central Portal.
+3. Review the deployment at central.sonatype.com → Publishing → Deployments, then click Publish. Published versions can never be changed or deleted.
+
+`consumer-rules.pro` ships inside the AAR. Any code that depends on a class name (as `ScreenFilter` does) needs a `-keepnames` rule there, checked with a minified release build of a test app.
 
 ## Tests
 

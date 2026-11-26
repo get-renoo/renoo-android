@@ -14,7 +14,7 @@ Licensed under the Apache License 2.0 ([LICENSE](LICENSE)). Versions follow [Sem
 
 ## Install
 
-Not published yet. Once it is on Maven Central:
+From Maven Central (`mavenCentral()` is in the default repositories of new Android projects):
 
 ```kotlin
 dependencies {
@@ -22,7 +22,7 @@ dependencies {
 }
 ```
 
-Until then, include the `:renoo` module from source, for example with a Gradle composite build (`includeBuild("<path to this repo>")`).
+Minified release builds need no extra configuration: the SDK ships its own R8 rules.
 
 ## Usage
 

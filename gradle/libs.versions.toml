@@ -5,6 +5,7 @@ billing = "8.3.0"
 junit = "4.13.2"
 json = "20250517"
 robolectric = "4.16"
+maven-publish = "0.37.0"
 
 [libraries]
 billing = { module = "com.android.billingclient:billing", version.ref = "billing" }
@@ -15,3 +16,4 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 [plugins]
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
