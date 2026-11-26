@@ -31,7 +31,12 @@ class RenooTest {
     private val handler = PurchaseHandler { _, onResult -> onResult(PurchaseResult.CANCELLED) }
 
     @Before
-    fun setUp() = Renoo.setCoreForTesting(null)
+    fun setUp() {
+        Renoo.setCoreForTesting(null)
+        // Run as the main process. The real lookup reads /proc/self/cmdline below API 28, which on a
+        // Linux CI runner names the JVM, not the app, and would keep the SDK off.
+        MainProcess.currentProcessName = { app.packageName }
+    }
 
     private val defaultProcessName = MainProcess.currentProcessName
 

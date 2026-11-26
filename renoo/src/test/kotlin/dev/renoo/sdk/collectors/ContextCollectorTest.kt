@@ -33,6 +33,12 @@ class ContextCollectorTest {
         storeDirectory = directory,
     )
 
+    /**
+     * Executor reads post follow-up writes (e.g. the network type is persisted in a second task),
+     * so one waitUntilIdle() can return before they run. Drain a few times.
+     */
+    private fun SdkCore.settle() = repeat(3) { environment.pipeline.waitUntilIdle() }
+
     @After
     fun tearDown() {
         directory.deleteRecursively()
@@ -65,7 +71,7 @@ class ContextCollectorTest {
     fun snapshotHasEveryKeyAfterStart() {
         val core = makeCore()
         core.context.start()
-        core.environment.pipeline.waitUntilIdle()
+        core.settle()
         val snapshot = core.context.snapshot()
         assertEquals(
             listOf("device_model", "locale", "timezone", "network_type", "low_power_mode", "dark_mode", "push_permission", "days_since_install", "is_reinstall"),
@@ -85,7 +91,7 @@ class ContextCollectorTest {
         // First process: the executor reads land and are persisted.
         val first = makeCore()
         first.context.start()
-        first.environment.pipeline.waitUntilIdle()
+        first.settle()
         val known = first.context.snapshot()
         assertEquals("authorized", known["push_permission"])
         assertTrue(known["low_power_mode"] is Boolean)
@@ -184,12 +190,12 @@ class ContextCollectorTest {
         val core = makeCore()
         core.context.start()
         core.context.pushStatusRead("denied")
-        core.environment.pipeline.waitUntilIdle()
+        core.settle()
         assertTrue(prefs.contains(PushPermissionTracker.KEY))
         assertTrue(prefs.contains(ContextCollector.KEY_FIRST_INSTALL_TIME))
         // Wired as in SdkCore.
         core.environment.pipeline.setOptedOut(true)
-        core.environment.pipeline.waitUntilIdle()
+        core.settle()
         val keys = listOf(
             PushPermissionTracker.KEY,
             ContextCollector.KEY_FIRST_INSTALL_TIME,
@@ -200,13 +206,13 @@ class ContextCollectorTest {
 
         core.context.refresh()
         core.context.pushStatusRead("authorized")
-        core.environment.pipeline.waitUntilIdle()
+        core.settle()
         keys.forEach { assertTrue("$it not written while opted out", !prefs.contains(it)) }
         assertEquals("the in-memory context stays for after opt-in", "authorized", core.context.snapshot()["push_permission"])
 
         core.environment.pipeline.setOptedOut(false)
         core.context.pushStatusRead("denied")
-        core.environment.pipeline.waitUntilIdle()
+        core.settle()
         assertEquals("denied", prefs.getString(PushPermissionTracker.KEY, null))
         assertEquals(
             "first status after opt-in is stored silently (only the identify re-sent after opt-in is queued)",

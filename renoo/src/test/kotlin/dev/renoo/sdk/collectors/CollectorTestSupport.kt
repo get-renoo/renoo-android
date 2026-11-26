@@ -26,15 +26,25 @@ internal class CollectorHarness {
     val logger = SdkLogger(LogLevel.NONE) { _, _ -> }
     val inline = Executor { it.run() }
 
-    fun makePipeline(scope: TrackingScope = TrackingScope.SUBSCRIBERS_ONLY): EventPipeline = EventPipeline(
-        executor = SdkExecutor(logger, threadName = "test-sdk"),
-        storeProvider = { EventStore(directory, logger = logger) },
-        prefs = prefs,
-        logger = logger,
-        envelopeProvider = { Envelope(sdkVersion = "0.0.0", appVersion = "1.0", appBuild = "1", osVersion = "16") },
-        trackingScope = scope,
-        installIdProvider = { "install-1" },
-    )
+    private val pipelines = ArrayList<EventPipeline>()
+
+    /**
+     * A new pipeline on the shared disk, like an app restart. Earlier pipelines are drained first:
+     * a real restart only begins after the previous process has stopped writing, and an undrained
+     * pipeline's background writes could otherwise land after the new one's events.
+     */
+    fun makePipeline(scope: TrackingScope = TrackingScope.SUBSCRIBERS_ONLY): EventPipeline {
+        pipelines.forEach { it.events() }
+        return EventPipeline(
+            executor = SdkExecutor(logger, threadName = "test-sdk"),
+            storeProvider = { EventStore(directory, logger = logger) },
+            prefs = prefs,
+            logger = logger,
+            envelopeProvider = { Envelope(sdkVersion = "0.0.0", appVersion = "1.0", appBuild = "1", osVersion = "16") },
+            trackingScope = scope,
+            installIdProvider = { "install-1" },
+        ).also { pipelines += it }
+    }
 
     fun tearDown() {
         directory.deleteRecursively()
