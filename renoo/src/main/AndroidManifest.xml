@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Normal (install-time) permissions, never prompted. The only ones the SDK declares. -->
+    <!-- Network type for the device context, and the uploader's no-network and cellular rules. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Sending queued events to the ingestion API (only when Configuration.ingestUrl is set). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>
