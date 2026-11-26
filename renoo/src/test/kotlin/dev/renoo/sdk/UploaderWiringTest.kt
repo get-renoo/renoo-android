@@ -20,7 +20,12 @@ class UploaderWiringTest {
     private val defaultProcessName = MainProcess.currentProcessName
 
     @Before
-    fun setUp() = Renoo.setCoreForTesting(null)
+    fun setUp() {
+        Renoo.setCoreForTesting(null)
+        // Run as the main process. The real lookup reads /proc/self/cmdline below API 28, which on a
+        // Linux CI runner names the JVM, not the app, and would keep the SDK off.
+        MainProcess.currentProcessName = { app.packageName }
+    }
 
     @After
     fun tearDown() {
